@@ -1,27 +1,18 @@
 # ex: set ts=8 noet:
 
-all: qt5 test
+all: qt6 test
 
 test: testpy3
-
-testpy2:
-	python -m unittest discover tests
 
 testpy3:
 	python3 -m unittest discover tests
 
-qt4: qt4py2
+qt6: qt6py3
 
-qt5: qt5py3
-
-qt4py2:
-	pyrcc4 -py2 -o libs/resources.py resources.qrc
-
-qt4py3:
-	pyrcc4 -py3 -o libs/resources.py resources.qrc
-
-qt5py3:
-	pyrcc5 -o libs/resources.py resources.qrc
+qt6py3:
+	# PyQt6 removed pyrcc6 — use rcc from the Qt6 SDK if resources.py needs regeneration:
+	#   rcc -g python -o libs/resources.py resources.qrc
+	@echo "Note: pyrcc6 is removed in PyQt6. Use Qt6 SDK 'rcc -g python' to regenerate libs/resources.py"
 
 clean:
 	rm -rf ~/.labelImgSettings.pkl *.pyc dist labelImg.egg-info __pycache__ build

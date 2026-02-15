@@ -18,8 +18,7 @@ cd labelImg-master
 
 # build labelImg app
 pip install py2app
-pip install PyQt5 lxml
-make qt5py3
+pip install PyQt6 lxml
 rm -rf build dist
 python setup.py py2app -A
 mv "/tmp/labelImgSetup/labelImg-master/dist/labelImg.app" /Applications

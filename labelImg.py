@@ -9,20 +9,12 @@ import sys
 import webbrowser as wb
 from functools import partial
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-except ImportError:
-    # needed for py3+qt4
-    # Ref:
-    # http://pyqt.sourceforge.net/Docs/PyQt4/incompatible_apis.html
-    # http://stackoverflow.com/questions/21217399/pyqt4-qtcore-qvariant-object-instead-of-a-string
-    if sys.version_info.major >= 3:
-        import sip
-        sip.setapi('QVariant', 2)
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+from PyQt6.QtGui import QAction, QColor, QCursor, QImage, QImageReader, QIcon, QPixmap
+from PyQt6.QtCore import Qt, QByteArray, QFileInfo, QPointF, QSize, QPoint, QProcess, QTimer
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QScrollArea, QDockWidget,
+                              QListWidget, QListWidgetItem, QVBoxLayout, QHBoxLayout,
+                              QCheckBox, QToolButton, QLabel, QPushButton, QMenu,
+                              QWidgetAction, QFileDialog, QMessageBox)
 
 from libs.combobox import ComboBox
 from libs.default_label_combobox import DefaultLabelComboBox
@@ -63,10 +55,10 @@ class WindowMixin(object):
         toolbar = ToolBar(title)
         toolbar.setObjectName(u'%sToolBar' % title)
         # toolbar.setOrientation(Qt.Vertical)
-        toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         if actions:
             add_actions(toolbar, actions)
-        self.addToolBar(Qt.LeftToolBarArea, toolbar)
+        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, toolbar)
         return toolbar
 
 
@@ -141,7 +133,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.diffc_button.setChecked(False)
         self.diffc_button.stateChanged.connect(self.button_state)
         self.edit_button = QToolButton()
-        self.edit_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        self.edit_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
 
         # Add some of widgets to list_layout
         list_layout.addWidget(self.edit_button)
@@ -193,8 +185,8 @@ class MainWindow(QMainWindow, WindowMixin):
         scroll.setWidget(self.canvas)
         scroll.setWidgetResizable(True)
         self.scroll_bars = {
-            Qt.Vertical: scroll.verticalScrollBar(),
-            Qt.Horizontal: scroll.horizontalScrollBar()
+            Qt.Orientation.Vertical: scroll.verticalScrollBar(),
+            Qt.Orientation.Horizontal: scroll.horizontalScrollBar()
         }
         self.scroll_area = scroll
         self.canvas.scrollRequest.connect(self.scroll_request)
@@ -205,11 +197,11 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.drawingPolygon.connect(self.toggle_drawing_sensitive)
 
         self.setCentralWidget(scroll)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.dock)
-        self.addDockWidget(Qt.RightDockWidgetArea, self.file_dock)
-        self.file_dock.setFeatures(QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.file_dock)
+        self.file_dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetFloatable)
 
-        self.dock_features = QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable
+        self.dock_features = QDockWidget.DockWidgetFeature.DockWidgetClosable | QDockWidget.DockWidgetFeature.DockWidgetFloatable
         self.dock.setFeatures(self.dock.features() ^ self.dock_features)
 
         # Actions
@@ -368,7 +360,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Label list context menu.
         label_menu = QMenu()
         add_actions(label_menu, (edit, delete))
-        self.label_list.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.label_list.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.label_list.customContextMenuRequested.connect(
             self.pop_label_list_menu)
 
@@ -474,20 +466,15 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add Chris
         self.difficult = False
 
-        # Fix the compatible issue for qt4 and qt5. Convert the QStringList to python list
         if settings.get(SETTING_RECENT_FILES):
-            if have_qstring():
-                recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
-                self.recent_files = [ustr(i) for i in recent_file_qstring_list]
-            else:
-                self.recent_files = recent_file_qstring_list = settings.get(SETTING_RECENT_FILES)
+            self.recent_files = settings.get(SETTING_RECENT_FILES)
 
         size = settings.get(SETTING_WIN_SIZE, QSize(600, 500))
         position = QPoint(0, 0)
         saved_position = settings.get(SETTING_WIN_POSE, position)
         # Fix the multiple monitors issue
-        for i in range(QApplication.desktop().screenCount()):
-            if QApplication.desktop().availableGeometry(i).contains(saved_position):
+        for screen in QApplication.screens():
+            if screen.availableGeometry().contains(saved_position):
                 position = saved_position
                 break
         self.resize(size)
@@ -507,12 +494,7 @@ class MainWindow(QMainWindow, WindowMixin):
         # Add chris
         Shape.difficult = self.difficult
 
-        def xbool(x):
-            if isinstance(x, QVariant):
-                return x.toBool()
-            return bool(x)
-
-        if xbool(settings.get(SETTING_ADVANCE_MODE, False)):
+        if bool(settings.get(SETTING_ADVANCE_MODE, False)):
             self.actions.advancedMode.setChecked(True)
             self.toggle_advanced_mode()
 
@@ -540,11 +522,11 @@ class MainWindow(QMainWindow, WindowMixin):
             self.open_dir_dialog(dir_path=self.file_path, silent=True)
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Control:
+        if event.key() == Qt.Key.Key_Control:
             self.canvas.set_drawing_shape_to_square(False)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Control:
+        if event.key() == Qt.Key.Key_Control:
             # Draw rectangle if Ctrl is pressed
             self.canvas.set_drawing_shape_to_square(True)
 
@@ -747,7 +729,7 @@ class MainWindow(QMainWindow, WindowMixin):
             menu.addAction(action)
 
     def pop_label_list_menu(self, point):
-        self.menus.labelList.exec_(self.label_list.mapToGlobal(point))
+        self.menus.labelList.exec(self.label_list.mapToGlobal(point))
 
     def edit_label(self):
         if not self.canvas.editing():
@@ -792,7 +774,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 shape.difficult = difficult
                 self.set_dirty()
             else:  # User probably changed item visibility
-                self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
+                self.canvas.set_shape_visible(shape, item.checkState() == Qt.CheckState.Checked)
         except:
             pass
 
@@ -815,8 +797,8 @@ class MainWindow(QMainWindow, WindowMixin):
     def add_label(self, shape):
         shape.paint_label = self.display_label_option.isChecked()
         item = HashableQListWidgetItem(shape.label)
-        item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-        item.setCheckState(Qt.Checked)
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        item.setCheckState(Qt.CheckState.Checked)
         item.setBackground(generate_color_by_text(shape.label))
         self.items_to_shapes[item] = shape
         self.shapes_to_items[shape] = item
@@ -926,11 +908,11 @@ class MainWindow(QMainWindow, WindowMixin):
         text = self.combo_box.cb.itemText(index)
         for i in range(self.label_list.count()):
             if text == "":
-                self.label_list.item(i).setCheckState(2)
+                self.label_list.item(i).setCheckState(Qt.CheckState.Checked)
             elif text != self.label_list.item(i).text():
-                self.label_list.item(i).setCheckState(0)
+                self.label_list.item(i).setCheckState(Qt.CheckState.Unchecked)
             else:
-                self.label_list.item(i).setCheckState(2)
+                self.label_list.item(i).setCheckState(Qt.CheckState.Checked)
 
     def default_label_combo_selection_changed(self, index):
         self.default_label=self.label_hist[index]
@@ -952,7 +934,7 @@ class MainWindow(QMainWindow, WindowMixin):
             shape.line_color = generate_color_by_text(shape.label)
             self.set_dirty()
         else:  # User probably changed item visibility
-            self.canvas.set_shape_visible(shape, item.checkState() == Qt.Checked)
+            self.canvas.set_shape_visible(shape, item.checkState() == Qt.CheckState.Checked)
 
     # Callback functions:
     def new_shape(self):
@@ -1013,8 +995,8 @@ class MainWindow(QMainWindow, WindowMixin):
     def zoom_request(self, delta):
         # get the current scrollbar positions
         # calculate the percentages ~ coordinates
-        h_bar = self.scroll_bars[Qt.Horizontal]
-        v_bar = self.scroll_bars[Qt.Vertical]
+        h_bar = self.scroll_bars[Qt.Orientation.Horizontal]
+        v_bar = self.scroll_bars[Qt.Orientation.Vertical]
 
         # get the current maximum, to know the difference after zooming
         h_bar_max = h_bar.maximum()
@@ -1088,7 +1070,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def toggle_polygons(self, value):
         for item, shape in self.items_to_shapes.items():
-            item.setCheckState(Qt.Checked if value else Qt.Unchecked)
+            item.setCheckState(Qt.CheckState.Checked if value else Qt.CheckState.Unchecked)
 
     def load_file(self, file_path=None):
         """Load the specified file, or the last opened file if None."""
@@ -1167,7 +1149,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.label_list.setCurrentItem(self.label_list.item(self.label_list.count() - 1))
                 self.label_list.item(self.label_list.count() - 1).setSelected(True)
 
-            self.canvas.setFocus(True)
+            self.canvas.setFocus()
             return True
         return False
 
@@ -1300,8 +1282,8 @@ class MainWindow(QMainWindow, WindowMixin):
             path = '.'
 
         dir_path = ustr(QFileDialog.getExistingDirectory(self,
-                                                         '%s - Save annotations to the directory' % __appname__, path,  QFileDialog.ShowDirsOnly
-                                                         | QFileDialog.DontResolveSymlinks))
+                                                         '%s - Save annotations to the directory' % __appname__, path,  QFileDialog.Option.ShowDirsOnly
+                                                         | QFileDialog.Option.DontResolveSymlinks))
 
         if dir_path is not None and len(dir_path) > 1:
             self.default_save_dir = dir_path
@@ -1352,7 +1334,7 @@ class MainWindow(QMainWindow, WindowMixin):
         if silent != True:
             target_dir_path = ustr(QFileDialog.getExistingDirectory(self,
                                                                     '%s - Open Directory' % __appname__, default_open_dir_path,
-                                                                    QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks))
+                                                                    QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks))
         else:
             target_dir_path = ustr(default_open_dir_path)
         self.last_open_dir = target_dir_path
@@ -1489,11 +1471,11 @@ class MainWindow(QMainWindow, WindowMixin):
         open_dialog_path = self.current_path()
         dlg = QFileDialog(self, caption, open_dialog_path, filters)
         dlg.setDefaultSuffix(LabelFile.suffix[1:])
-        dlg.setAcceptMode(QFileDialog.AcceptSave)
+        dlg.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
         filename_without_extension = os.path.splitext(self.file_path)[0]
         dlg.selectFile(filename_without_extension)
-        dlg.setOption(QFileDialog.DontUseNativeDialog, False)
-        if dlg.exec_():
+        dlg.setOption(QFileDialog.Option.DontUseNativeDialog, False)
+        if dlg.exec():
             full_file_path = ustr(dlg.selectedFiles()[0])
             if remove_ext:
                 return os.path.splitext(full_file_path)[0]  # Return file path without the extension.
@@ -1533,24 +1515,23 @@ class MainWindow(QMainWindow, WindowMixin):
     def reset_all(self):
         self.settings.reset()
         self.close()
-        process = QProcess()
-        process.startDetached(os.path.abspath(__file__))
+        QProcess.startDetached(sys.executable, [os.path.abspath(__file__)])
 
     def may_continue(self):
         if not self.dirty:
             return True
         else:
             discard_changes = self.discard_changes_dialog()
-            if discard_changes == QMessageBox.No:
+            if discard_changes == QMessageBox.StandardButton.No:
                 return True
-            elif discard_changes == QMessageBox.Yes:
+            elif discard_changes == QMessageBox.StandardButton.Yes:
                 self.save_file()
                 return True
             else:
                 return False
 
     def discard_changes_dialog(self):
-        yes, no, cancel = QMessageBox.Yes, QMessageBox.No, QMessageBox.Cancel
+        yes, no, cancel = QMessageBox.StandardButton.Yes, QMessageBox.StandardButton.No, QMessageBox.StandardButton.Cancel
         msg = u'You have unsaved changes, would you like to save them and proceed?\nClick "No" to undo all changes.'
         return QMessageBox.warning(self, u'Attention', msg, yes | no | cancel)
 
@@ -1685,7 +1666,7 @@ def read(filename, default=None):
 def get_main_app(argv=None):
     """
     Standard boilerplate Qt application code.
-    Do everything but app.exec_() -- so that we can test the application in one thread
+    Do everything but app.exec() -- so that we can test the application in one thread
     """
     if not argv:
         argv = []
@@ -1716,7 +1697,7 @@ def get_main_app(argv=None):
 def main():
     """construct main app and run it"""
     app, _win = get_main_app(sys.argv)
-    return app.exec_()
+    return app.exec()
 
 if __name__ == '__main__':
     sys.exit(main())

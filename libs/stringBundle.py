@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 if items were added in files in the resources/strings folder,
-then execute "pyrcc5 resources.qrc -o resources.py" in the root directory
-and execute "pyrcc5 ../resources.qrc -o resources.py" in the libs directory
+then regenerate the resources module for PyQt6
 """
 import re
 import os
@@ -11,13 +10,7 @@ import sys
 import locale
 from libs.ustr import ustr
 
-try:
-    from PyQt5.QtCore import *
-except ImportError:
-    if sys.version_info.major >= 3:
-        import sip
-        sip.setapi('QVariant', 2)
-    from PyQt4.QtCore import *
+from PyQt6.QtCore import QFile, QIODevice, QTextStream
 
 
 class StringBundle:
@@ -64,9 +57,8 @@ class StringBundle:
         PROP_SEPERATOR = '='
         f = QFile(path)
         if f.exists():
-            if f.open(QIODevice.ReadOnly | QFile.Text):
+            if f.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
                 text = QTextStream(f)
-                text.setCodec("UTF-8")
 
             while not text.atEnd():
                 line = ustr(text.readLine())

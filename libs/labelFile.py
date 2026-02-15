@@ -1,10 +1,7 @@
 # Copyright (c) 2016 Tzutalin
 # Create by TzuTaLin <tzu.ta.lin@gmail.com>
 
-try:
-    from PyQt5.QtGui import QImage
-except ImportError:
-    from PyQt4.QtGui import QImage
+from PyQt6.QtGui import QImage
 
 import os.path
 from enum import Enum
@@ -56,7 +53,6 @@ class LabelFile(object):
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)
-        # imgFileNameWithoutExt = os.path.splitext(img_file_name)[0]
         # Read from file path because self.imageData might be empty if saving to
         # Pascal format
         if isinstance(image_data, QImage):
@@ -86,7 +82,6 @@ class LabelFile(object):
         img_folder_path = os.path.dirname(image_path)
         img_folder_name = os.path.split(img_folder_path)[-1]
         img_file_name = os.path.basename(image_path)
-        # imgFileNameWithoutExt = os.path.splitext(img_file_name)[0]
         # Read from file path because self.imageData might be empty if saving to
         # Pascal format
         if isinstance(image_data, QImage):

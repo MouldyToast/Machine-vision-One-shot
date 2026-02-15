@@ -9,8 +9,8 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 NAME = 'labelImg'
-REQUIRES_PYTHON = '>=3.0.0'
-REQUIRED_DEP = ['pyqt5', 'lxml']
+REQUIRES_PYTHON = '>=3.8.0'
+REQUIRED_DEP = ['PyQt6', 'lxml']
 about = {}
 
 with open(os.path.join(here, 'libs', '__init__.py')) as f:
@@ -109,11 +109,11 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     package_data={'data/predefined_classes.txt': ['data/predefined_classes.txt']},
     options={'py2app': OPTIONS},

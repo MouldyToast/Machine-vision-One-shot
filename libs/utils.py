@@ -4,15 +4,9 @@ import hashlib
 import re
 import sys
 
-try:
-    from PyQt5.QtGui import *
-    from PyQt5.QtCore import *
-    from PyQt5.QtWidgets import *
-    QT5 = True
-except ImportError:
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
-    QT5 = False
+from PyQt6.QtGui import QAction, QIcon, QColor, QRegularExpressionValidator
+from PyQt6.QtCore import QRegularExpression, QT_VERSION_STR
+from PyQt6.QtWidgets import QPushButton, QMenu
 
 
 def new_icon(icon):
@@ -61,7 +55,7 @@ def add_actions(widget, actions):
 
 
 def label_validator():
-    return QRegExpValidator(QRegExp(r'^[^ \t].+'), None)
+    return QRegularExpressionValidator(QRegularExpression(r'^[^ \t].+'), None)
 
 
 class Struct(object):
@@ -89,12 +83,12 @@ def generate_color_by_text(text):
 
 
 def have_qstring():
-    """p3/qt5 get rid of QString wrapper as py3 has native unicode str type"""
-    return not (sys.version_info.major >= 3 or QT_VERSION_STR.startswith('5.'))
+    """p3/qt6 get rid of QString wrapper as py3 has native unicode str type"""
+    return False
 
 
 def util_qt_strlistclass():
-    return QStringList if have_qstring() else list
+    return list
 
 
 def natural_sort(list, key=lambda s:s):
@@ -108,10 +102,5 @@ def natural_sort(list, key=lambda s:s):
     list.sort(key=sort_key)
 
 
-# QT4 has a trimmed method, in QT5 this is called strip
-if QT5:
-    def trimmed(text):
-        return text.strip()
-else:
-    def trimmed(text):
-        return text.trimmed()
+def trimmed(text):
+    return text.strip()
