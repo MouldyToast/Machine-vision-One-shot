@@ -8,12 +8,12 @@ import sys
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
-NAME = 'labelImg'
+NAME = 'visionui'
 REQUIRES_PYTHON = '>=3.8.0'
 REQUIRED_DEP = ['PyQt6', 'lxml']
 about = {}
 
-with open(os.path.join(here, 'libs', '__init__.py')) as f:
+with open(os.path.join(here, 'librarys', '__init__.py')) as f:
     exec(f.read(), about)
 
 with open("README.rst", "rb") as readme_file:
@@ -32,7 +32,7 @@ elif _platform == "darwin":
    SET_REQUIRES.append('py2app')
 
 required_packages = find_packages()
-required_packages.append('labelImg')
+required_packages.append('visionui')
 
 APP = [NAME + '.py']
 OPTIONS = {
@@ -91,18 +91,18 @@ setup(
     author_email='tzu.ta.lin@gmail.com',
     url='https://github.com/tzutalin/labelImg',
     python_requires=REQUIRES_PYTHON,
-    package_dir={'labelImg': '.'},
+    package_dir={'visionui': '.'},
     packages=required_packages,
     entry_points={
         'console_scripts': [
-            'labelImg=labelImg.labelImg:main'
+            'visionui=visionui.visionui:main'
         ]
     },
     include_package_data=True,
     install_requires=REQUIRED_DEP,
     license="MIT license",
     zip_safe=False,
-    keywords='labelImg labelTool development annotation deeplearning',
+    keywords='visionui labelTool development annotation deeplearning',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',

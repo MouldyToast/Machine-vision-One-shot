@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QScrollArea, QD
 
 from librarys.combobox import ComboBox
 from librarys.default_label_combobox import DefaultLabelComboBox
-from libs.resources import *
+from librarys.resources import *
 from librarys.constants import *
 from librarys.utils import *
 from librarys.settings import Settings
@@ -1682,7 +1682,7 @@ def get_main_app(argv=None):
     args.class_file = args.class_file and os.path.normpath(args.class_file)
     args.save_dir = args.save_dir and os.path.normpath(args.save_dir)
 
-    # Usage : labelImg.py image classFile saveDir
+    # Usage : visionui.py image classFile saveDir
     win = MainWindow(args.image_dir,
                      args.class_file,
                      args.save_dir)

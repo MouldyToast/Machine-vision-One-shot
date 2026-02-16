@@ -6,7 +6,7 @@ class TestPascalVocRW(unittest.TestCase):
 
     def test_upper(self):
         dir_name = os.path.abspath(os.path.dirname(__file__))
-        libs_path = os.path.join(dir_name, '..', 'libs')
+        libs_path = os.path.join(dir_name, '..', 'librarys')
         sys.path.insert(0, libs_path)
         from pascal_voc_io import PascalVocWriter
         from pascal_voc_io import PascalVocReader
@@ -33,7 +33,7 @@ class TestCreateMLRW(unittest.TestCase):
 
     def test_a_write(self):
         dir_name = os.path.abspath(os.path.dirname(__file__))
-        libs_path = os.path.join(dir_name, '..', 'libs')
+        libs_path = os.path.join(dir_name, '..', 'librarys')
         sys.path.insert(0, libs_path)
         from create_ml_io import CreateMLWriter
 
@@ -73,7 +73,7 @@ class TestCreateMLRW(unittest.TestCase):
 
     def test_b_read(self):
         dir_name = os.path.abspath(os.path.dirname(__file__))
-        libs_path = os.path.join(dir_name, '..', 'libs')
+        libs_path = os.path.join(dir_name, '..', 'librarys')
         sys.path.insert(0, libs_path)
         from create_ml_io import CreateMLReader
 

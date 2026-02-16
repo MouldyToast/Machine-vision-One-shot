@@ -14,19 +14,19 @@ jobs:
           pip3 install pipenv
           pipenv install PyQt6 lxml
           pipenv run pip install PyQt6 lxml
-      - name: Package LabelImg
+      - name: Package visionui
         run: |
           rm -rf build dist
           pipenv run python setup.py py2app
-          open dist/labelImg.app
+          open dist/visionui.app
       - name: Archive macOS app
         run: |
           cd dist/
-          tar czf labelImg.tgz labelImg.app
+          tar czf visionui.tgz visionui.app
       - uses: actions/upload-artifact@v3
         with:
           name: macOS artifact
-          path: dist/labelImg.tgz
+          path: dist/visionui.tgz
   package-windows:
     runs-on: windows-latest
     steps:
@@ -34,13 +34,13 @@ jobs:
       - name: Setup Python Environment
         run: |
           pip3 install pyinstaller PyQt6 lxml
-      - name: Package LabelImg
+      - name: Package visionui
         run: |
-          pyinstaller --hidden-import=PyQt6 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+          pyinstaller --hidden-import=PyQt6 --hidden-import=lxml -F -n "visionui" -c visionui.py -p ./librarys -p ./
       - uses: actions/upload-artifact@v3
         with:
           name: Windows artifact
-          path: dist/labelImg.exe
+          path: dist/visionui.exe
   package-linux:
     runs-on: ubuntu-latest
     steps:
@@ -48,10 +48,10 @@ jobs:
       - name: Setup Python Environment
         run: |
           pip3 install pyinstaller PyQt6 lxml
-      - name: Package LabelImg
+      - name: Package visionui
         run: |
-          pyinstaller --hidden-import=PyQt6 --hidden-import=lxml -F -n "labelImg" -c labelImg.py -p ./libs -p ./
+          pyinstaller --hidden-import=PyQt6 --hidden-import=lxml -F -n "visionui" -c visionui.py -p ./librarys -p ./
       - uses: actions/upload-artifact@v3
         with:
           name: Linux artifact
-          path: dist/labelImg
+          path: dist/visionui

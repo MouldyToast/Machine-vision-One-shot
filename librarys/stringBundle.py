@@ -8,9 +8,9 @@ import re
 import os
 import sys
 import locale
-from libs.ustr import ustr
+from librarys.ustr import ustr
 
-from libs.resources import STRINGS_DIR
+from librarys.resources import STRINGS_DIR
 
 
 class StringBundle:

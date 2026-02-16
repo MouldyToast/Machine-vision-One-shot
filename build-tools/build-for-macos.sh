@@ -3,27 +3,27 @@
 brew install python@2
 pip install --upgrade virtualenv
 
-# clone labelimg source
-rm -rf /tmp/labelImgSetup
-mkdir /tmp/labelImgSetup
-cd /tmp/labelImgSetup
-curl https://codeload.github.com/tzutalin/labelImg/zip/master --output labelImg.zip
-unzip labelImg.zip
-rm labelImg.zip
+# clone visionui source
+rm -rf /tmp/visionuiSetup
+mkdir /tmp/visionuiSetup
+cd /tmp/visionuiSetup
+curl https://codeload.github.com/tzutalin/labelImg/zip/master --output visionui.zip
+unzip visionui.zip
+rm visionui.zip
 
 # setup python3 space
-virtualenv --system-site-packages  -p python3 /tmp/labelImgSetup/labelImg-py3
-source /tmp/labelImgSetup/labelImg-py3/bin/activate
+virtualenv --system-site-packages  -p python3 /tmp/visionuiSetup/visionui-py3
+source /tmp/visionuiSetup/visionui-py3/bin/activate
 cd labelImg-master
 
-# build labelImg app
+# build visionui app
 pip install py2app
 pip install PyQt6 lxml
 rm -rf build dist
 python setup.py py2app -A
-mv "/tmp/labelImgSetup/labelImg-master/dist/labelImg.app" /Applications
+mv "/tmp/visionuiSetup/labelImg-master/dist/visionui.app" /Applications
 # deactivate python3
 deactivate
 cd ../
-rm -rf /tmp/labelImgSetup
+rm -rf /tmp/visionuiSetup
 echo 'DONE'

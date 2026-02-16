@@ -15,18 +15,18 @@ echo ${THIS_SCRIPT_DIR}
 #. venv_wine/bin/activate
 rm -r build
 rm -r dist
-rm labelImg.spec
+rm visionui.spec
 
 wine c:/Python27/python.exe pyinstaller/pyinstaller.py --hidden-import=xml \
             --hidden-import=xml.etree \
             --hidden-import=xml.etree.ElementTree \
             --hidden-import=lxml.etree \
-             -D -F -n labelImg -c "../labelImg.py" -p ../libs -p ../
+             -D -F -n visionui -c "../visionui.py" -p ../librarys -p ../
 
 FOLDER=$(git describe --abbrev=0 --tags)
 FOLDER="windows_"$FOLDER
 rm -rf "$FOLDER"
 mkdir "$FOLDER"
-cp dist/labelImg.exe $FOLDER
+cp dist/visionui.exe $FOLDER
 cp -rf ../data $FOLDER/data
 zip "$FOLDER.zip" -r $FOLDER

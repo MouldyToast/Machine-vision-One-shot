@@ -7,7 +7,7 @@ include resources.qrc
 
 recursive-include data *
 recursive-include icons *
-recursive-include libs *
+recursive-include librarys *
 
 recursive-exclude build-tools *
 recursive-exclude tests *

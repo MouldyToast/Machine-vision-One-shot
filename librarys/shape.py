@@ -4,7 +4,7 @@
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QColor, QPen, QPainterPath, QFont
 
-from libs.utils import distance
+from librarys.utils import distance
 import sys
 
 DEFAULT_LINE_COLOR = QColor(0, 255, 0, 128)

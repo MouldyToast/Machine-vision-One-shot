@@ -14,4 +14,4 @@ done
 # python setup.py sdist upload
 # Net pypi: twine upload dist/*
 
-# Test before upladoing: pip install dist/labelImg.tar.gz
+# Test before upladoing: pip install dist/visionui.tar.gz

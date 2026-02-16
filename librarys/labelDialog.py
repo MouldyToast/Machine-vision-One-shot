@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QDialog, QLineEdit, QDialogButtonBox,
                               QVBoxLayout, QListWidget, QCompleter)
 from PyQt6.QtCore import QStringListModel, QPoint
 
-from libs.utils import new_icon, label_validator, trimmed
+from librarys.utils import new_icon, label_validator, trimmed
 
 BB = QDialogButtonBox
 

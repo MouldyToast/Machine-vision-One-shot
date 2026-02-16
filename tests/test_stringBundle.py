@@ -2,10 +2,10 @@ import os
 import sys
 import unittest
 
-# Add parent directory to path so we can import libs
+# Add parent directory to path so we can import librarys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from libs.stringBundle import StringBundle
+from librarys.stringBundle import StringBundle
 
 class TestStringBundle(unittest.TestCase):
 
