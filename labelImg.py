@@ -16,31 +16,31 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QScrollArea, QD
                               QCheckBox, QToolButton, QLabel, QPushButton, QMenu,
                               QWidgetAction, QFileDialog, QMessageBox)
 
-from libs.combobox import ComboBox
-from libs.default_label_combobox import DefaultLabelComboBox
+from librarys.combobox import ComboBox
+from librarys.default_label_combobox import DefaultLabelComboBox
 from libs.resources import *
-from libs.constants import *
-from libs.utils import *
-from libs.settings import Settings
-from libs.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
-from libs.stringBundle import StringBundle
-from libs.canvas import Canvas
-from libs.zoomWidget import ZoomWidget
-from libs.lightWidget import LightWidget
-from libs.labelDialog import LabelDialog
-from libs.colorDialog import ColorDialog
-from libs.labelFile import LabelFile, LabelFileError, LabelFileFormat
-from libs.toolBar import ToolBar
-from libs.pascal_voc_io import PascalVocReader
-from libs.pascal_voc_io import XML_EXT
-from libs.yolo_io import YoloReader
-from libs.yolo_io import TXT_EXT
-from libs.create_ml_io import CreateMLReader
-from libs.create_ml_io import JSON_EXT
-from libs.ustr import ustr
-from libs.hashableQListWidgetItem import HashableQListWidgetItem
+from librarys.constants import *
+from librarys.utils import *
+from librarys.settings import Settings
+from librarys.shape import Shape, DEFAULT_LINE_COLOR, DEFAULT_FILL_COLOR
+from librarys.stringBundle import StringBundle
+from librarys.canvas import Canvas
+from librarys.zoomWidget import ZoomWidget
+from librarys.lightWidget import LightWidget
+from librarys.labelDialog import LabelDialog
+from librarys.colorDialog import ColorDialog
+from librarys.labelFile import LabelFile, LabelFileError, LabelFileFormat
+from librarys.toolBar import ToolBar
+from librarys.pascal_voc_io import PascalVocReader
+from librarys.pascal_voc_io import XML_EXT
+from librarys.yolo_io import YoloReader
+from librarys.yolo_io import TXT_EXT
+from librarys.create_ml_io import CreateMLReader
+from librarys.create_ml_io import JSON_EXT
+from librarys.ustr import ustr
+from librarys.hashableQListWidgetItem import HashableQListWidgetItem
 
-__appname__ = 'labelImg'
+__appname__ = 'visionui'
 
 
 class WindowMixin(object):
@@ -678,7 +678,7 @@ class MainWindow(QMainWindow, WindowMixin):
         self.show_tutorial_dialog(browser='default')
 
     def show_info_dialog(self):
-        from libs.__init__ import __version__
+        from librarys.__init__ import __version__
         msg = u'Name:{0} \nApp Version:{1} \n{2} '.format(__appname__, __version__, sys.version_info)
         QMessageBox.information(self, u'Information', msg)
 
