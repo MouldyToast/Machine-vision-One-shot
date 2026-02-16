@@ -4,8 +4,8 @@ from PyQt6.QtGui import (QColor, QPixmap, QPainter, QCursor, QBrush,
 from PyQt6.QtCore import Qt, QPointF, QPoint, QSize, pyqtSignal
 from PyQt6.QtWidgets import QWidget, QMenu, QApplication
 
-from libs.shape import Shape
-from libs.utils import distance
+from librarys.shape import Shape
+from librarys.utils import distance
 
 CURSOR_DEFAULT = Qt.CursorShape.ArrowCursor
 CURSOR_POINT = Qt.CursorShape.PointingHandCursor
@@ -17,7 +17,7 @@ CURSOR_GRAB = Qt.CursorShape.OpenHandCursor
 class Canvas(QWidget):
     zoomRequest = pyqtSignal(int)
     lightRequest = pyqtSignal(int)
-    scrollRequest = pyqtSignal(int, int)
+    scrollRequest = pyqtSignal(int, Qt.Orientation)
     newShape = pyqtSignal()
     selectionChanged = pyqtSignal(bool)
     shapeMoved = pyqtSignal()
