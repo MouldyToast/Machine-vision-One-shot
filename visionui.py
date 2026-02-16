@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
+import logging
 import os.path
 import platform
 import shutil
@@ -669,7 +670,7 @@ class MainWindow(QMainWindow, WindowMixin):
                     wb.register('chrome', None, wb.BackgroundBrowser(chrome_path))
             try:
                 wb.get('chrome').open(link, new=2)
-            except:
+            except Exception:
                 wb.open(link, new=2)
         elif browser.lower() in wb._browsers:
             wb.get(browser.lower()).open(link, new=2)
@@ -686,7 +687,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.show_tutorial_dialog(browser='default', link='https://github.com/tzutalin/labelImg#Hotkeys')
 
     def create_shape(self):
-        assert self.beginner()
+        if not self.beginner():
+            return
         self.canvas.set_editing(False)
         self.actions.create.setEnabled(False)
 
@@ -706,11 +708,13 @@ class MainWindow(QMainWindow, WindowMixin):
         self.actions.editMode.setEnabled(not edit)
 
     def set_create_mode(self):
-        assert self.advanced()
+        if not self.advanced():
+            return
         self.toggle_draw_mode(False)
 
     def set_edit_mode(self):
-        assert self.advanced()
+        if not self.advanced():
+            return
         self.toggle_draw_mode(True)
         self.label_selection_changed()
 
@@ -764,21 +768,20 @@ class MainWindow(QMainWindow, WindowMixin):
         if not item:  # If not selected Item, take the first one
             item = self.label_list.item(self.label_list.count() - 1)
 
+        if item is None:
+            return
+
         difficult = self.diffc_button.isChecked()
 
-        try:
-            shape = self.items_to_shapes[item]
-        except:
-            pass
+        shape = self.items_to_shapes.get(item)
+        if shape is None:
+            return
         # Checked and Update
-        try:
-            if difficult != shape.difficult:
-                shape.difficult = difficult
-                self.set_dirty()
-            else:  # User probably changed item visibility
-                self.canvas.set_shape_visible(shape, item.checkState() == Qt.CheckState.Checked)
-        except:
-            pass
+        if difficult != shape.difficult:
+            shape.difficult = difficult
+            self.set_dirty()
+        else:  # User probably changed item visibility
+            self.canvas.set_shape_visible(shape, item.checkState() == Qt.CheckState.Checked)
 
     # React to canvas signals.
     def shape_selection_changed(self, selected=False):
@@ -787,7 +790,9 @@ class MainWindow(QMainWindow, WindowMixin):
         else:
             shape = self.canvas.selected_shape
             if shape:
-                self.shapes_to_items[shape].setSelected(True)
+                item = self.shapes_to_items.get(shape)
+                if item is not None:
+                    item.setSelected(True)
             else:
                 self.label_list.clearSelection()
         self.actions.delete.setEnabled(selected)
@@ -811,9 +816,10 @@ class MainWindow(QMainWindow, WindowMixin):
 
     def remove_label(self, shape):
         if shape is None:
-            # print('rm empty label')
             return
-        item = self.shapes_to_items[shape]
+        item = self.shapes_to_items.get(shape)
+        if item is None:
+            return
         self.label_list.takeItem(self.label_list.row(item))
         del self.shapes_to_items[shape]
         del self.items_to_shapes[item]
@@ -917,19 +923,24 @@ class MainWindow(QMainWindow, WindowMixin):
                 self.label_list.item(i).setCheckState(Qt.CheckState.Checked)
 
     def default_label_combo_selection_changed(self, index):
-        self.default_label=self.label_hist[index]
+        if 0 <= index < len(self.label_hist):
+            self.default_label = self.label_hist[index]
 
     def label_selection_changed(self):
         item = self.current_item()
         if item and self.canvas.editing():
+            shape = self.items_to_shapes.get(item)
+            if shape is None:
+                return
             self._no_selection_slot = True
-            self.canvas.select_shape(self.items_to_shapes[item])
-            shape = self.items_to_shapes[item]
+            self.canvas.select_shape(shape)
             # Add Chris
             self.diffc_button.setChecked(shape.difficult)
 
     def label_item_changed(self, item):
-        shape = self.items_to_shapes[item]
+        shape = self.items_to_shapes.get(item)
+        if shape is None:
+            return
         label = item.text()
         if label != shape.label:
             shape.label = item.text()
@@ -964,6 +975,8 @@ class MainWindow(QMainWindow, WindowMixin):
             self.prev_label_text = text
             generate_color = generate_color_by_text(text)
             shape = self.canvas.set_last_label(text, generate_color, generate_color)
+            if shape is None:
+                return
             self.add_label(shape)
             if self.beginner():  # Switch to edit mode.
                 self.canvas.set_editing(True)
@@ -1022,8 +1035,10 @@ class MainWindow(QMainWindow, WindowMixin):
         # the scaling from 0 to 1 has some padding
         # you don't have to hit the very leftmost pixel for a maximum-left movement
         margin = 0.1
-        move_x = (cursor_x - margin * w) / (w - 2 * margin * w)
-        move_y = (cursor_y - margin * h) / (h - 2 * margin * h)
+        denom_x = w - 2 * margin * w
+        denom_y = h - 2 * margin * h
+        move_x = (cursor_x - margin * w) / denom_x if denom_x != 0 else 0.5
+        move_y = (cursor_y - margin * h) / denom_y if denom_y != 0 else 0.5
 
         # clamp the values from 0 to 1
         move_x = min(max(move_x, 0), 1)
@@ -1198,7 +1213,8 @@ class MainWindow(QMainWindow, WindowMixin):
         super(MainWindow, self).resizeEvent(event)
 
     def paint_canvas(self):
-        assert not self.image.isNull(), "cannot paint null image"
+        if self.image.isNull():
+            return
         self.canvas.scale = 0.01 * self.zoom_widget.value()
         self.canvas.overlay_color = self.light_widget.color()
         self.canvas.label_font_size = int(0.02 * max(self.image.width(), self.image.height()))
@@ -1214,16 +1230,24 @@ class MainWindow(QMainWindow, WindowMixin):
         e = 2.0  # So that no scrollbars are generated.
         w1 = self.centralWidget().width() - e
         h1 = self.centralWidget().height() - e
+        if h1 <= 0 or w1 <= 0:
+            return 1.0
         a1 = w1 / h1
         # Calculate a new scale value based on the pixmap's aspect ratio.
-        w2 = self.canvas.pixmap.width() - 0.0
-        h2 = self.canvas.pixmap.height() - 0.0
+        if not self.canvas._has_pixmap():
+            return 1.0
+        w2 = self.canvas.pixmap.width()
+        h2 = self.canvas.pixmap.height()
+        if w2 <= 0 or h2 <= 0:
+            return 1.0
         a2 = w2 / h2
         return w1 / w2 if a2 >= a1 else h1 / h2
 
     def scale_fit_width(self):
         # The epsilon does not seem to work too well here.
         w = self.centralWidget().width() - 2.0
+        if not self.canvas._has_pixmap() or self.canvas.pixmap.width() <= 0:
+            return 1.0
         return w / self.canvas.pixmap.width()
 
     def closeEvent(self, event):
@@ -1368,7 +1392,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 else:
                     return
 
-            self.canvas.verified = self.label_file.verified
+            if self.label_file is not None:
+                self.canvas.verified = self.label_file.verified
             self.paint_canvas()
             self.save_file()
 
@@ -1458,7 +1483,9 @@ class MainWindow(QMainWindow, WindowMixin):
                             else self.save_file_dialog(remove_ext=False))
 
     def save_file_as(self, _value=False):
-        assert not self.image.isNull(), "cannot save empty image"
+        if self.image.isNull():
+            self.error_message(u'Error', u'Cannot save empty image')
+            return
         self._save_file(self.save_file_dialog())
 
     def save_file_dialog(self, remove_ext=True):
@@ -1558,7 +1585,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def choose_shape_line_color(self):
         color = self.color_dialog.getColor(self.line_color, u'Choose Line Color',
                                            default=DEFAULT_LINE_COLOR)
-        if color:
+        if color and self.canvas.selected_shape:
             self.canvas.selected_shape.line_color = color
             self.canvas.update()
             self.set_dirty()
@@ -1566,7 +1593,7 @@ class MainWindow(QMainWindow, WindowMixin):
     def choose_shape_fill_color(self):
         color = self.color_dialog.getColor(self.fill_color, u'Choose Fill Color',
                                            default=DEFAULT_FILL_COLOR)
-        if color:
+        if color and self.canvas.selected_shape:
             self.canvas.selected_shape.fill_color = color
             self.canvas.update()
             self.set_dirty()
@@ -1633,6 +1660,8 @@ class MainWindow(QMainWindow, WindowMixin):
         self.canvas.verified = create_ml_parse_reader.verified
 
     def copy_previous_bounding_boxes(self):
+        if self.file_path is None or self.file_path not in self.m_img_list:
+            return
         current_index = self.m_img_list.index(self.file_path)
         if current_index - 1 >= 0:
             prev_file_path = self.m_img_list[current_index - 1]
@@ -1655,7 +1684,7 @@ def read(filename, default=None):
         reader = QImageReader(filename)
         reader.setAutoTransform(True)
         return reader.read()
-    except:
+    except Exception:
         return default
 
 
@@ -1690,8 +1719,18 @@ def get_main_app(argv=None):
     return app, win
 
 
+def _global_exception_handler(exc_type, exc_value, exc_tb):
+    """Catch unhandled exceptions so they don't vanish silently in Qt event loops."""
+    logging.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_tb))
+
+
 def main():
     """construct main app and run it"""
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s %(name)s: %(message)s',
+    )
+    sys.excepthook = _global_exception_handler
     app, _win = get_main_app(sys.argv)
     return app.exec()
 

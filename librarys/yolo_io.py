@@ -94,8 +94,8 @@ class YoloReader:
 
         # print (file_path, self.class_list_path)
 
-        classes_file = open(self.class_list_path, 'r')
-        self.classes = classes_file.read().strip('\n').split('\n')
+        with open(self.class_list_path, 'r') as classes_file:
+            self.classes = classes_file.read().strip('\n').split('\n')
 
         # print (self.classes)
 
@@ -119,7 +119,10 @@ class YoloReader:
         self.shapes.append((label, points, None, None, difficult))
 
     def yolo_line_to_shape(self, class_index, x_center, y_center, w, h):
-        label = self.classes[int(class_index)]
+        idx = int(class_index)
+        if idx < 0 or idx >= len(self.classes):
+            return None
+        label = self.classes[idx]
 
         x_min = max(float(x_center) - float(w) / 2, 0)
         x_max = min(float(x_center) + float(w) / 2, 1)
@@ -134,10 +137,15 @@ class YoloReader:
         return label, x_min, y_min, x_max, y_max
 
     def parse_yolo_format(self):
-        bnd_box_file = open(self.file_path, 'r')
-        for bndBox in bnd_box_file:
-            class_index, x_center, y_center, w, h = bndBox.strip().split(' ')
-            label, x_min, y_min, x_max, y_max = self.yolo_line_to_shape(class_index, x_center, y_center, w, h)
-
-            # Caveat: difficult flag is discarded when saved as yolo format.
-            self.add_shape(label, x_min, y_min, x_max, y_max, False)
+        with open(self.file_path, 'r') as bnd_box_file:
+            for bndBox in bnd_box_file:
+                parts = bndBox.strip().split(' ')
+                if len(parts) != 5:
+                    continue
+                class_index, x_center, y_center, w, h = parts
+                result = self.yolo_line_to_shape(class_index, x_center, y_center, w, h)
+                if result is None:
+                    continue
+                label, x_min, y_min, x_max, y_max = result
+                # Caveat: difficult flag is discarded when saved as yolo format.
+                self.add_shape(label, x_min, y_min, x_max, y_max, False)

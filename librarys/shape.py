@@ -145,7 +145,7 @@ class Shape(object):
         elif shape == self.P_ROUND:
             path.addEllipse(point, d / 2.0, d / 2.0)
         else:
-            assert False, "unsupported vertex shape"
+            raise ValueError("unsupported vertex shape: %s" % shape)
 
     def nearest_vertex(self, point, epsilon):
         index = None
@@ -157,9 +157,13 @@ class Shape(object):
         return index
 
     def contains_point(self, point):
+        if not self.points:
+            return False
         return self.make_path().contains(point)
 
     def make_path(self):
+        if not self.points:
+            return QPainterPath()
         path = QPainterPath(self.points[0])
         for p in self.points[1:]:
             path.lineTo(p)

@@ -30,14 +30,17 @@ class StringBundle:
             try:
                 locale_str = locale.getdefaultlocale()[0] if locale.getdefaultlocale() and len(
                     locale.getdefaultlocale()) > 0 else os.getenv('LANG')
-            except:
+            except Exception:
                 print('Invalid locale')
                 locale_str = 'en'
 
         return StringBundle(cls.__create_key, locale_str)
 
     def get_string(self, string_id):
-        assert(string_id in self.id_to_message), "Missing string id : " + string_id
+        if string_id not in self.id_to_message:
+            import logging
+            logging.warning("Missing string id: %s — returning key as fallback", string_id)
+            return string_id
         return self.id_to_message[string_id]
 
     def __create_lookup_fallback_list(self, locale_str):

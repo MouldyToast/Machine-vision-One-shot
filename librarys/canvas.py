@@ -62,6 +62,9 @@ class Canvas(QWidget):
         # initialisation for panning
         self.pan_initial_pos = QPoint()
 
+    def _has_pixmap(self):
+        return self.pixmap is not None and not self.pixmap.isNull()
+
     def set_drawing_color(self, qcolor):
         self.drawing_line_color = qcolor
         self.drawing_rect_color = qcolor
@@ -176,12 +179,13 @@ class Canvas(QWidget):
                 self.repaint()
 
                 # Display annotation width and height while moving vertex
-                point1 = self.h_shape[1]
-                point3 = self.h_shape[3]
-                current_width = abs(point1.x() - point3.x())
-                current_height = abs(point1.y() - point3.y())
-                self.parent().window().label_coordinates.setText(
-                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
+                if len(self.h_shape) >= 4:
+                    point1 = self.h_shape[1]
+                    point3 = self.h_shape[3]
+                    current_width = abs(point1.x() - point3.x())
+                    current_height = abs(point1.y() - point3.y())
+                    self.parent().window().label_coordinates.setText(
+                            'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             elif self.selected_shape and self.prev_point:
                 self.override_cursor(CURSOR_MOVE)
                 self.bounded_move_shape(self.selected_shape, pos)
@@ -189,12 +193,13 @@ class Canvas(QWidget):
                 self.repaint()
 
                 # Display annotation width and height while moving shape
-                point1 = self.selected_shape[1]
-                point3 = self.selected_shape[3]
-                current_width = abs(point1.x() - point3.x())
-                current_height = abs(point1.y() - point3.y())
-                self.parent().window().label_coordinates.setText(
-                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
+                if len(self.selected_shape) >= 4:
+                    point1 = self.selected_shape[1]
+                    point3 = self.selected_shape[3]
+                    current_width = abs(point1.x() - point3.x())
+                    current_height = abs(point1.y() - point3.y())
+                    self.parent().window().label_coordinates.setText(
+                            'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
             else:
                 # pan
                 delta_pos = ev.position().toPoint() - self.pan_initial_pos
@@ -234,12 +239,13 @@ class Canvas(QWidget):
                 self.update()
 
                 # Display annotation width and height while hovering inside
-                point1 = self.h_shape[1]
-                point3 = self.h_shape[3]
-                current_width = abs(point1.x() - point3.x())
-                current_height = abs(point1.y() - point3.y())
-                self.parent().window().label_coordinates.setText(
-                        'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
+                if len(self.h_shape) >= 4:
+                    point1 = self.h_shape[1]
+                    point3 = self.h_shape[3]
+                    current_width = abs(point1.x() - point3.x())
+                    current_height = abs(point1.y() - point3.y())
+                    self.parent().window().label_coordinates.setText(
+                            'Width: %d, Height: %d / X: %d; Y: %d' % (current_width, current_height, pos.x(), pos.y()))
                 break
         else:  # Nothing found, clear highlights, reset state.
             if self.h_shape:
@@ -291,7 +297,8 @@ class Canvas(QWidget):
                 QApplication.restoreOverrideCursor()
 
     def end_move(self, copy=False):
-        assert self.selected_shape and self.selected_shape_copy
+        if not self.selected_shape or not self.selected_shape_copy:
+            return
         shape = self.selected_shape_copy
         # del shape.fill_color
         # del shape.line_color
@@ -486,7 +493,7 @@ class Canvas(QWidget):
             self.bounded_move_shape(shape, point + offset)
 
     def paintEvent(self, event):
-        if self.pixmap is None or self.pixmap.isNull():
+        if not self._has_pixmap():
             return super(Canvas, self).paintEvent(event)
 
         p = self._painter
@@ -551,6 +558,8 @@ class Canvas(QWidget):
         return QPointF(point) / self.scale - self.offset_to_center()
 
     def offset_to_center(self):
+        if not self._has_pixmap():
+            return QPointF(0, 0)
         s = self.scale
         area = super(Canvas, self).size()
         w, h = self.pixmap.width() * s, self.pixmap.height() * s
@@ -560,11 +569,14 @@ class Canvas(QWidget):
         return QPointF(x, y)
 
     def out_of_pixmap(self, p):
+        if not self._has_pixmap():
+            return True
         w, h = self.pixmap.width(), self.pixmap.height()
         return not (0 <= p.x() <= w and 0 <= p.y() <= h)
 
     def finalise(self):
-        assert self.current
+        if not self.current:
+            return
         if self.current.points[0] == self.current.points[-1]:
             self.current = None
             self.drawingPolygon.emit(False)
@@ -590,7 +602,7 @@ class Canvas(QWidget):
         return self.minimumSizeHint()
 
     def minimumSizeHint(self):
-        if self.pixmap is not None and not self.pixmap.isNull():
+        if self._has_pixmap():
             s = self.pixmap.size()
             return QSize(int(s.width() * self.scale), int(s.height() * self.scale))
         return super(Canvas, self).minimumSizeHint()
@@ -662,7 +674,8 @@ class Canvas(QWidget):
         return True in map(self.out_of_pixmap, points)
 
     def set_last_label(self, text, line_color=None, fill_color=None):
-        assert text
+        if not text or not self.shapes:
+            return None
         self.shapes[-1].label = text
         if line_color:
             self.shapes[-1].line_color = line_color
@@ -673,14 +686,16 @@ class Canvas(QWidget):
         return self.shapes[-1]
 
     def undo_last_line(self):
-        assert self.shapes
+        if not self.shapes:
+            return
         self.current = self.shapes.pop()
         self.current.set_open()
         self.line.points = [self.current[-1], self.current[0]]
         self.drawingPolygon.emit(True)
 
     def reset_all_lines(self):
-        assert self.shapes
+        if not self.shapes:
+            return
         self.current = self.shapes.pop()
         self.current.set_open()
         self.line.points = [self.current[-1], self.current[0]]
