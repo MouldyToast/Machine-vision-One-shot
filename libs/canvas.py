@@ -486,7 +486,7 @@ class Canvas(QWidget):
             self.bounded_move_shape(shape, point + offset)
 
     def paintEvent(self, event):
-        if not self.pixmap:
+        if self.pixmap is None or self.pixmap.isNull():
             return super(Canvas, self).paintEvent(event)
 
         p = self._painter
@@ -590,7 +590,7 @@ class Canvas(QWidget):
         return self.minimumSizeHint()
 
     def minimumSizeHint(self):
-        if self.pixmap:
+        if self.pixmap is not None and not self.pixmap.isNull():
             s = self.pixmap.size()
             return QSize(int(s.width() * self.scale), int(s.height() * self.scale))
         return super(Canvas, self).minimumSizeHint()

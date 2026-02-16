@@ -1,6 +1,7 @@
 from math import sqrt
 from libs.ustr import ustr
 import hashlib
+import os
 import re
 import sys
 
@@ -8,8 +9,13 @@ from PyQt6.QtGui import QAction, QIcon, QColor, QRegularExpressionValidator
 from PyQt6.QtCore import QRegularExpression, QT_VERSION_STR
 from PyQt6.QtWidgets import QPushButton, QMenu
 
+from libs.resources import ICONS_DIR
+
 
 def new_icon(icon):
+    icon_path = os.path.join(ICONS_DIR, icon + '.png')
+    if os.path.exists(icon_path):
+        return QIcon(icon_path)
     return QIcon(':/' + icon)
 
 

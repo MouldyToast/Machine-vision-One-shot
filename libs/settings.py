@@ -33,8 +33,11 @@ class Settings(object):
                 with open(self.path, 'rb') as f:
                     self.data = pickle.load(f)
                     return True
-        except:
-            print('Loading setting failed')
+        except Exception as e:
+            print('Loading setting failed: %s' % str(e))
+            print('This may happen after upgrading from PyQt5 to PyQt6.')
+            print('Settings will be reset. Old settings file: %s' % self.path)
+            self.data = {}
         return False
 
     def reset(self):

@@ -10,7 +10,7 @@ import sys
 import locale
 from libs.ustr import ustr
 
-from PyQt6.QtCore import QFile, QIODevice, QTextStream
+from libs.resources import STRINGS_DIR
 
 
 class StringBundle:
@@ -42,7 +42,7 @@ class StringBundle:
 
     def __create_lookup_fallback_list(self, locale_str):
         result_paths = []
-        base_path = ":/strings"
+        base_path = os.path.join(STRINGS_DIR, "strings")
         result_paths.append(base_path)
         if locale_str is not None:
             # Don't follow standard BCP47. Simple fallback
@@ -51,20 +51,17 @@ class StringBundle:
                 last_path = result_paths[-1]
                 result_paths.append(last_path + '-' + tag)
 
-        return result_paths
+        return [p + '.properties' for p in result_paths]
 
     def __load_bundle(self, path):
         PROP_SEPERATOR = '='
-        f = QFile(path)
-        if f.exists():
-            if f.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text):
-                text = QTextStream(f)
-
-            while not text.atEnd():
-                line = ustr(text.readLine())
-                key_value = line.split(PROP_SEPERATOR)
-                key = key_value[0].strip()
-                value = PROP_SEPERATOR.join(key_value[1:]).strip().strip('"')
-                self.id_to_message[key] = value
-
-            f.close()
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#'):
+                        continue
+                    key_value = line.split(PROP_SEPERATOR)
+                    key = key_value[0].strip()
+                    value = PROP_SEPERATOR.join(key_value[1:]).strip().strip('"')
+                    self.id_to_message[key] = value

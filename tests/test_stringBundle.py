@@ -1,8 +1,11 @@
 import os
 import sys
 import unittest
-import resources
-from stringBundle import StringBundle
+
+# Add parent directory to path so we can import libs
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from libs.stringBundle import StringBundle
 
 class TestStringBundle(unittest.TestCase):
 

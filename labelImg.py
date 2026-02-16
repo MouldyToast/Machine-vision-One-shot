@@ -131,6 +131,8 @@ class MainWindow(QMainWindow, WindowMixin):
         # Create a widget for edit and diffc button
         self.diffc_button = QCheckBox(get_str('useDifficult'))
         self.diffc_button.setChecked(False)
+        # Note: stateChanged(int) is deprecated in Qt 6.7+ in favor of
+        # checkStateChanged(Qt.CheckState). Keep stateChanged for PyQt6 < 6.7 compat.
         self.diffc_button.stateChanged.connect(self.button_state)
         self.edit_button = QToolButton()
         self.edit_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
@@ -1305,21 +1307,15 @@ class MainWindow(QMainWindow, WindowMixin):
             if self.file_path else '.'
         if self.label_file_format == LabelFileFormat.PASCAL_VOC:
             filters = "Open Annotation XML file (%s)" % ' '.join(['*.xml'])
-            filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a xml file' % __appname__, path, filters))
+            filename, _ = QFileDialog.getOpenFileName(self, '%s - Choose a xml file' % __appname__, path, filters)
             if filename:
-                if isinstance(filename, (tuple, list)):
-                    filename = filename[0]
-            self.load_pascal_xml_by_filename(filename)
+                self.load_pascal_xml_by_filename(filename)
 
         elif self.label_file_format == LabelFileFormat.CREATE_ML:
-            
             filters = "Open Annotation JSON file (%s)" % ' '.join(['*.json'])
-            filename = ustr(QFileDialog.getOpenFileName(self, '%s - Choose a json file' % __appname__, path, filters))
+            filename, _ = QFileDialog.getOpenFileName(self, '%s - Choose a json file' % __appname__, path, filters)
             if filename:
-                if isinstance(filename, (tuple, list)):
-                    filename = filename[0]
-
-            self.load_create_ml_json_by_filename(filename, self.file_path)         
+                self.load_create_ml_json_by_filename(filename, self.file_path)         
         
 
     def open_dir_dialog(self, _value=False, dir_path=None, silent=False):
