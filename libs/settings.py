@@ -7,7 +7,7 @@ class Settings(object):
         # Be default, the home will be in the same folder as labelImg
         home = os.path.expanduser("~")
         self.data = {}
-        self.path = os.path.join(home, '.labelImgSettings.pkl')
+        self.path = os.path.join(home, '.visionui.pkl')
 
     def __setitem__(self, key, value):
         self.data[key] = value
@@ -35,9 +35,6 @@ class Settings(object):
                     return True
         except Exception as e:
             print('Loading setting failed: %s' % str(e))
-            print('This may happen after upgrading from PyQt5 to PyQt6.')
-            print('Settings will be reset. Old settings file: %s' % self.path)
-            self.data = {}
         return False
 
     def reset(self):
