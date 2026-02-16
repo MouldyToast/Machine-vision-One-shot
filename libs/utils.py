@@ -1,5 +1,4 @@
 from math import sqrt
-from libs.ustr import ustr
 import hashlib
 import os
 import re
@@ -9,11 +8,22 @@ from PyQt6.QtGui import QAction, QIcon, QColor, QRegularExpressionValidator
 from PyQt6.QtCore import QRegularExpression, QT_VERSION_STR
 from PyQt6.QtWidgets import QPushButton, QMenu
 
-from libs.resources import ICONS_DIR
+from librarys.resources import ICONS_DIR
 
+ICON_ALIASES = {
+    'new': 'objects',
+    'close': 'close',
+    'delete': 'cancel',
+    'resetall': 'resetall',
+    'expert': 'expert2',
+    'hide': 'eye',
+
+    # add any others where alias != filename
+}
 
 def new_icon(icon):
-    icon_path = os.path.join(ICONS_DIR, icon + '.png')
+    filename = ICON_ALIASES.get(icon, icon)
+    icon_path = os.path.join(ICONS_DIR, filename + '.png')
     if os.path.exists(icon_path):
         return QIcon(icon_path)
     return QIcon(':/' + icon)
@@ -80,7 +90,7 @@ def format_shortcut(text):
 
 
 def generate_color_by_text(text):
-    s = ustr(text)
+    s = str(text)
     hash_code = int(hashlib.sha256(s.encode('utf-8')).hexdigest(), 16)
     r = int((hash_code / 255) % 255)
     g = int((hash_code / 65025) % 255)
