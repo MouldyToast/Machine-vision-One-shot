@@ -16,6 +16,10 @@ cscope*
 Pipfile
 *.xml
 
+# Test output artifacts
+tests/tests.json
+tests/test.xml
+
 # MacOS System-Generated
 .DS_Store
 .DS_Store?
